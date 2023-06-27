@@ -118,7 +118,7 @@ class Beam:
         ビーム画像Surfaceを生成する
         引数 ビームを放つこうかとん
         """
-        self.img = pg.transform.rotozoom(pg.image.load(f"ex03/fig/beam.png"), 0, 2.0)
+        self.img = pg.transform.rotozoom(pg.image.load(f"ex03/fig/beam.png"), 0, 5.0)
         self.rct = self.img.get_rect()
         self.rct.left = bird.rct.right
         self.rct.centery = bird.rct.centery
@@ -132,7 +132,6 @@ class Beam:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
-
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -144,12 +143,14 @@ def main():
 
     clock = pg.time.Clock()
     tmr = 0
+    beams = []
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beam = Beam(bird) # ビームクラスのインスタンスを生成
+                beams.append(beam)
         
         screen.blit(bg_img, [0, 0])
 
@@ -162,19 +163,24 @@ def main():
                 return
         
         for i, bomb in enumerate(bombs):
-            if beam is not None:
-                if beam.rct.colliderect(bomb.rct):
-                    bombs[i] = None
-                    beam = None
-                    bird.change_img(6, screen)
-                    pg.display.update()
+            for j, beam in enumerate(beams):
+                if beam is not None:
+                    if beam.rct.left == 1600:
+                        beams[j] == None
+                    if beam.rct.colliderect(bomb.rct):
+                        bombs[i] = None
+                        beams[j] = None
+                        bird.change_img(6, screen)
+                        pg.display.update()
+                    
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         bombs = [bomb for bomb in bombs if bomb is not None]
+        beams = [beam for beam in beams if beam is not None]
         for bomb in bombs:
             bomb.update(screen)
-        if beam is not None:
+        for beam in beams:
             beam.update(screen)
         pg.display.update()
         tmr += 1
